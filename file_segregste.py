@@ -22,24 +22,35 @@ def segregate_files(source_folder):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-    # List all files in the source folder
-    files = os.listdir(source_folder)
+    # List all files and directories in the source folder
+    entries = os.listdir(source_folder)
 
-    # Segregate files based on their names
-    for file in files:
-        source_path = os.path.join(source_folder, file)
+    # Segregate files and move directories
+    for entry in entries:
+        source_path = os.path.join(source_folder, entry)
+        destination_path = None
 
-        if "_T" in file:
-            destination_path = os.path.join(termo_folder, file)
-        elif "_W" in file:
-            destination_path = os.path.join(wide_folder, file)
-        elif "_S" in file:
-            destination_path = os.path.join(small_folder, file)
-        else:
-            destination_path = os.path.join(other_folder, file)
+        if os.path.isfile(source_path):
+            if "_T" in entry:
+                destination_path = os.path.join(termo_folder, entry)
+            elif "_W" in entry:
+                destination_path = os.path.join(wide_folder, entry)
+            elif "_S" in entry:
+                destination_path = os.path.join(small_folder, entry)
+            else:
+                destination_path = os.path.join(other_folder, entry)
+        elif os.path.isdir(source_path):
+            # If it's a directory, move it without checking the name
+            destination_path = os.path.join(other_folder, entry)
 
-        # Move the file to the appropriate folder
-        shutil.move(source_path, destination_path)
+        if destination_path:
+            # Move the file or directory to the appropriate folder
+            try:
+                shutil.move(source_path, destination_path)
+            except shutil.Error:
+                # Handle the case where the destination already exists
+                new_name = os.path.join(other_folder, "renamed_" + entry)
+                shutil.move(source_path, new_name)
 
     print("File segregation completed.")
 
